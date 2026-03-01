@@ -1,0 +1,9 @@
+.env
+logs/
+certs/
+__pycache__/
+*.pyc
+*.pem
+*.log
+.idea/
+*.backup

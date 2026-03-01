@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pi Cloud — Auth Logs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #050510;
+      color: #eaeaea;
+      font-family: 'Rajdhani', sans-serif;
+    }
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: radial-gradient(ellipse at 20% 50%, rgba(0, 80, 180, 0.12) 0%, transparent 60%), #050510;
+    }
+    .stars::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.6) 0%, transparent 100%);
+      background-size: 500px 500px;
+      animation: drift 80s linear infinite;
+    }
+    @keyframes drift {
+      from { transform: translateY(0); }
+      to { transform: translateY(-500px); }
+    }
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 900;
+      color: #00d4ff;
+      letter-spacing: 4px;
+      text-shadow: 0 0 15px rgba(0,212,255,0.4);
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .back-btn {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(0,212,255,0.6);
+      text-decoration: none;
+      border: 1px solid rgba(0,212,255,0.2);
+      padding: 7px 16px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .back-btn:hover { color: #00d4ff; border-color: rgba(0,212,255,0.5); background: rgba(0,212,255,0.05); }
+    .logout {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,100,100,0.6);
+      text-decoration: none;
+      border: 1px solid rgba(255,100,100,0.2);
+      padding: 7px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .logout:hover { color: #ff6b6b; border-color: rgba(255,100,100,0.5); }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeUp 0.5s ease forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    header h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 32px;
+      font-weight: 900;
+      color: #00d4ff;
+      letter-spacing: 5px;
+      text-shadow: 0 0 25px rgba(0,212,255,0.4);
+    }
+    header p { color: rgba(255,255,255,0.3); font-size: 13px; letter-spacing: 2px; margin-top: 8px; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .summary-card {
+      background: rgba(10, 15, 40, 0.7);
+      border: 1px solid rgba(0, 212, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .summary-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,212,255,0.5); margin-bottom: 8px; }
+    .summary-value { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; }
+    .summary-value.total { color: #00d4ff; }
+    .summary-value.success { color: #00ff88; }
+    .summary-value.failed { color: #ff6b6b; }
+
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      animation: fadeUp 0.5s ease 0.2s both forwards;
+      opacity: 1;
+    }
+    .log-table th {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: rgba(0,212,255,0.5);
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0,212,255,0.1);
+    }
+    .log-table td {
+      padding: 14px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.5px;
+    }
+    .log-table tr:hover td { background: rgba(0,212,255,0.03); }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+    .badge.success {
+      background: rgba(0,255,136,0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+    .badge.failed {
+      background: rgba(255,107,107,0.1);
+      color: #ff6b6b;
+      border: 1px solid rgba(255,107,107,0.3);
+    }
+    .empty {
+      text-align: center;
+      padding: 60px;
+      color: rgba(255,255,255,0.2);
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="page">
+    <nav>
+      <a href="/" class="nav-logo">PI CLOUD</a>
+      <div class="nav-right">
+        <a href="/" class="back-btn">← Back</a>
+        <a href="/logout" class="logout">Logout</a>
+      </div>
+    </nav>
+
+    <header>
+      <h1>🔐 AUTH LOGS</h1>
+      <p>Login attempt history — logged in as {{ user }}</p>
+    </header>
+
+    <div class="summary">
+      <div class="summary-card">
+        <div class="summary-label">Total Attempts</div>
+        <div class="summary-value total">{{ entries | length }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Successful</div>
+        <div class="summary-value success">{{ entries | selectattr('status', 'equalto', 'SUCCESS') | list | length }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Failed</div>
+        <div class="summary-value failed">{{ entries | selectattr('status', 'equalto', 'FAILED') | list | length }}</div>
+      </div>
+    </div>
+
+    {% if entries %}
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>Username</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+        <tr>
+          <td>{{ entry.timestamp }}</td>
+          <td><span class="badge {{ entry.status | lower }}">{{ entry.status }}</span></td>
+          <td>{{ entry.user }}</td>
+          <td>{{ entry.ip }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No login attempts recorded yet</div>
+    {% endif %}
+
+  </div>
+</body>
+</html>

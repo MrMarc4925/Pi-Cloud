@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pi Cloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #050510;
+      color: #eaeaea;
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+    }
+    .stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(0, 80, 180, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 180, 150, 0.08) 0%, transparent 50%),
+        #050510;
+    }
+    .stars::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 10%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 50%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.4) 0%, transparent 100%);
+      background-size: 500px 500px;
+      animation: drift 80s linear infinite;
+    }
+    @keyframes drift {
+      from { transform: translateY(0); }
+      to { transform: translateY(-500px); }
+    }
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 18px;
+      font-weight: 900;
+      color: #00d4ff;
+      letter-spacing: 4px;
+      text-shadow: 0 0 15px rgba(0,212,255,0.4);
+    }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-user { font-size: 13px; letter-spacing: 1px; color: rgba(255,255,255,0.4); }
+    .nav-user span { color: #00d4ff; }
+    .logout {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,100,100,0.6);
+      text-decoration: none;
+      border: 1px solid rgba(255,100,100,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .logout:hover { color: #ff6b6b; border-color: rgba(255,100,100,0.5); background: rgba(255,100,100,0.05); }
+    header { text-align: center; margin-bottom: 50px; animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 1; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    header h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 42px;
+      font-weight: 900;
+      color: #00d4ff;
+      letter-spacing: 6px;
+      text-shadow: 0 0 30px rgba(0,212,255,0.4);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00ff88;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 50px;
+      animation: fadeUp 0.5s ease 0.1s both forwards;
+      opacity: 1;
+    }
+    .stat-card {
+      background: rgba(10, 15, 40, 0.7);
+      border: 1px solid rgba(0, 212, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .stat-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0, 212, 255, 0.5); margin-bottom: 8px; }
+    .stat-value { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; color: #eaeaea; }
+    .stat-value.warn { color: #ffaa00; }
+    .stat-value.hot { color: #ff6b6b; }
+    .stat-sub { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 4px; }
+    .bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #00d4ff, #00ff88); }
+    .bar-fill.warn { background: linear-gradient(90deg, #ffaa00, #ff6b6b); }
+    .section-title {
+      text-align: center;
+      color: rgba(255,255,255,0.25);
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp 0.5s ease 0.2s both forwards;
+      opacity: 1;
+    }
+    .folders {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      animation: fadeUp 0.5s ease 0.3s both forwards;
+      opacity: 1;
+    }
+    .folder {
+      background: rgba(10, 15, 40, 0.8);
+      border: 1px solid rgba(0, 212, 255, 0.12);
+      border-radius: 16px;
+      padding: 32px 16px 24px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    .folder::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+      opacity: 1;
+      transition: opacity 0.25s;
+    }
+    .folder:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0, 212, 255, 0.12); border-color: rgba(0, 212, 255, 0.3); }
+    .folder:hover::before { opacity: 1; }
+    .folder .icon { font-size: 44px; margin-bottom: 14px; display: block; }
+    .folder .name { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #eaeaea; text-transform: uppercase; }
+    .folder .count { font-size: 12px; color: rgba(255,255,255,0.25); margin-top: 6px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="page">
+    <nav>
+      <div class="nav-logo">PI CLOUD</div>
+      <div class="nav-right">
+        <div class="nav-user">Logged in as <span>{{ user }}</span></div>
+        <a href="http://100.114.213.100:8096" target="_blank" class="back-btn" style="color: rgba(255,100,255,0.6); border-color: rgba(255,100,255,0.2);">🎬 Jellyfin</a>
+        <a href="/logs" class="back-btn" style="color: rgba(255,200,0,0.6); border-color: rgba(255,200,0,0.2);">🔐 Logs</a>
+        <a href="/logout" class="logout">Logout</a>
+      </div>
+    </nav>
+    <header>
+      <h1>PI CLOUD</h1>
+      <div class="status"><span class="dot"></span> Systems Online</div>
+    </header>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">CPU</div>
+        <div class="stat-value {% if stats.cpu > 80 %}hot{% elif stats.cpu > 60 %}warn{% endif %}">{{ stats.cpu }}%</div>
+        <div class="bar"><div class="bar-fill {% if stats.cpu > 60 %}warn{% endif %}" style="width: {{ stats.cpu }}%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">RAM</div>
+        <div class="stat-value {% if stats.ram_percent > 80 %}hot{% elif stats.ram_percent > 60 %}warn{% endif %}">{{ stats.ram_percent }}%</div>
+        <div class="stat-sub">{{ stats.ram_used }}GB / {{ stats.ram_total }}GB</div>
+        <div class="bar"><div class="bar-fill {% if stats.ram_percent > 60 %}warn{% endif %}" style="width: {{ stats.ram_percent }}%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Disk</div>
+        <div class="stat-value {% if stats.disk_percent > 80 %}hot{% elif stats.disk_percent > 60 %}warn{% endif %}">{{ stats.disk_percent }}%</div>
+        <div class="stat-sub">{{ stats.disk_used }}GB / {{ stats.disk_total }}GB</div>
+        <div class="bar"><div class="bar-fill {% if stats.disk_percent > 60 %}warn{% endif %}" style="width: {{ stats.disk_percent }}%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Temp</div>
+        <div class="stat-value {% if stats.temp != 'N/A' and stats.temp > 70 %}hot{% elif stats.temp != 'N/A' and stats.temp > 55 %}warn{% endif %}">
+          {% if stats.temp == "N/A" %}N/A{% else %}{{ stats.temp }}°{% endif %}
+        </div>
+        <div class="stat-sub">Core Temp</div>
+      </div>
+    </div>
+    <p class="section-title">My Library</p>
+    <div class="folders">
+      {% for name, count in folders.items() %}
+      <a href="/section/{{ name }}" class="folder">
+        <span class="icon">{{ icons[name] }}</span>
+        <div class="name">{{ name }}</div>
+        <div class="count">
+          {% if count is none %}Not found
+          {% elif count == 0 %}Empty
+          {% else %}{{ count }} files
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
