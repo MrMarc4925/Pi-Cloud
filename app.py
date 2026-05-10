@@ -2,13 +2,20 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask import send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
 import os
 import psutil
 import logging
 from datetime import datetime
 
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "REDACTED"
+
+# Load secret key from environment, fail fast if missing
+app.secret_key = os.environ.get("SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY is not set. Add it to your .env file.")
 
 # Auth logging setup
 logging.basicConfig(
@@ -25,14 +32,20 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"]
 )
 
+# Load user credentials from environment
+_username = os.environ.get("PI_CLOUD_USERNAME")
+_password = os.environ.get("PI_CLOUD_PASSWORD")
+if not _username or not _password:
+    raise RuntimeError("PI_CLOUD_USERNAME and PI_CLOUD_PASSWORD must be set in .env.")
+
 USERS = {
-    "placeholder_user": "placeholder_password"
+    _username: _password
 }
 
 LIBRARY = {
-    "AI":     "/home/pi/pi-cloud/AI",
+    "AI": "/home/pi/pi-cloud/AI",
     "Movies": "/home/pi/pi-cloud/Movies",
-    "Music":  "/home/pi/pi-cloud/Music",
+    "Music": "/home/pi/pi-cloud/Music",
     "Photos": "/home/pi/pi-cloud/Photos",
 }
 
@@ -85,7 +98,7 @@ def login():
             auth_log.info(f"SUCCESS | user={username} | ip={ip}")
             return redirect(url_for("index"))
         else:
-            auth_log.warning(f"FAILED  | user={username} | ip={ip}")
+            auth_log.warning(f"FAILED | user={username} | ip={ip}")
             error = "Invalid credentials"
     return render_template("login.html", error=error)
 
@@ -144,7 +157,8 @@ def logs():
                         status = "SUCCESS" if "SUCCESS" in parts[0] else "FAILED"
                         user = parts[1].replace("user=", "").strip()
                         ip = parts[2].replace("ip=", "").strip()
-                        log_entries.append({                            "timestamp": timestamp,
+                        log_entries.append({
+                            "timestamp": timestamp,
                             "status": status,
                             "user": user,
                             "ip": ip
